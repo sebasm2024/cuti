@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:myapp/widgets/drawer_widget.dart';
 
-class CustomTileWidget extends StatelessWidget {
-  final IconData lead;
-  final String label;
-  final IconData end;
-  final String route;
+class BaseView extends StatelessWidget {
+  final String title;
+  final Widget child;
 
-  const CustomTileWidget({
-    super.key,
-    required this.lead,
-    required this.label,
-    required this.route,
-    this.end = Icons.arrow_right,
-  });
+  const BaseView({required this.title, required this.child, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(color: Theme.of(context).hoverColor),
-      child: ListTile(
-        leading: Icon(lead),
-        title: Text(label),
-        trailing: Icon(end),
-        onTap: () => context.push(route),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
       ),
+      drawer: AppDrawer(),
+      body: child,
     );
   }
 }

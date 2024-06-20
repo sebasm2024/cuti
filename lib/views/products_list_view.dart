@@ -1,75 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:myapp/Providers/product_provider.dart';
+import 'package:myapp/types/product.dart';
+import 'package:myapp/widgets/card_item_product.dart';
+import 'package:myapp/widgets/drawer_widget.dart';
 
-class Product {
-  final String name;
-  final String description;
-  final String imageURL;
-  final String features;
-
-  Product({
-    required this.name,
-    required this.description,
-    required this.imageURL,
-    required this.features,
-  });
-}
-
-class ProductsListView extends StatelessWidget {
-   ProductsListView({Key? key}) : super(key: key);
-
-  final List<Product> products = [
-    Product(
-      name: 'Producto 1',
-      description: 'Descripción del Producto 1',
-      imageURL: 'https://via.placeholder.com/150',
-      features: 'Características del Producto 1',
-    ),
-    Product(
-      name: 'Producto 2',
-      description: 'Descripción del Producto 2',
-      imageURL: 'https://via.placeholder.com/150',
-      features: 'Características del Producto 2',
-    ),
-    // Agrega más productos aquí según sea necesario
-  ];
+class ProductsListView extends ConsumerWidget  {
+  const ProductsListView({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+        final productProv = ref.watch(productsProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Lista de Productos'),
+       appBar: AppBar(
+        title: const Text("List products View"),
       ),
-      body: Column(
-        children: products.map((product) {
-          return Card(
-            child: ListTile(
-              leading: Image.network(
-                product.imageURL,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-              title: Text(product.name),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product.description),
-                  Text(product.features),
-                ],
-              ),
-              onTap: () {
-                // Aquí puedes agregar la lógica para manejar el tap en un producto
-              },
-            ),
-          );
-        }).toList(),
+      drawer:  AppDrawer(),
+      body: SingleChildScrollView(
+        child: Column(children: [...productProv.when(
+                  data: (List<Product> lp) {
+                    return lp.map((product) {
+                      return CardItemProduct(
+                        url: product.urlImage,
+                        name: product.name,
+                        price: product.price,
+                        stock: product.stock,
+                        description: product.description,
+                      );
+                    }).toList();
+                  },
+                  error: (obj, err) => [Text(err.toString()), const Text('===='), Text(obj.toString())],
+                  loading: () => [const CircularProgressIndicator()],
+                )],),
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: ProductsListView(),
-  ));
 }
