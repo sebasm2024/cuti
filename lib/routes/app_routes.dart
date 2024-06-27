@@ -1,17 +1,17 @@
 import 'package:go_router/go_router.dart';
 import 'package:myapp/views/create_update_view.dart';
 import 'package:myapp/views/home_view.dart';
-import 'package:myapp/views/product_detail_view.dart';
 import 'package:myapp/views/products_list_view.dart';
+import '../views/product_detail_view.dart';
 
 class AppRoutes {
-  static String home = "/";
-  static String createUpdate = "/create-update";
-  static String productDetail = "/product-detail";
-  static String productsListView = "/product-list-view";
+  static const String home = "/";
+  static const String createUpdate = "/create-update";
+  static const String productDetail = "/product-detail";
+  static const String productsList = "/products-list";
 }
 
-final routesConfig = GoRouter(
+final GoRouter routesConfig = GoRouter(
   routes: [
     GoRoute(
       path: AppRoutes.home,
@@ -22,22 +22,15 @@ final routesConfig = GoRouter(
       builder: (context, state) => const CreateUpdateView(),
     ),
     GoRoute(
-      path: AppRoutes.productsListView,
-      builder: (context, state) => const ProductsListView(),
+      path: '${AppRoutes.productDetail}/:productId',
+      builder: (context, state) {
+        final productId = state.pathParameters['productId']!;
+        return ProductDetail(productId: productId);
+      },
     ),
     GoRoute(
-      path: AppRoutes.productDetail,
-      builder: (context, state) {
-        final Map<String, String> params = state.extra as Map<String, String>;
-        final imageUrl = params['imageUrl']!;
-        final title = params['title']!;
-        final price = double.parse(params['price']!);
-        return ProductDetailView(
-          imageUrl: imageUrl,
-          title: title,
-          price: price,
-        );
-      },
+      path: AppRoutes.productsList,
+      builder: (context, state) => const ProductsList(),
     ),
   ],
 );
