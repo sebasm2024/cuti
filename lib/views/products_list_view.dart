@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:myapp/types/product.dart';
-
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:12576171.
+import 'package:myapp/widgets/card_item_product.dart';
 import '../Providers/product_provider.dart';
-import '../widgets/card_item_product.dart';
 import '../widgets/drawer_widget.dart';
+import 'create_update_view.dart';
 
 class ProductsList extends ConsumerWidget {
   const ProductsList({super.key});
@@ -23,13 +22,23 @@ class ProductsList extends ConsumerWidget {
           return SingleChildScrollView(
             child: Column(
               children: products.map((product) {
-                return CardItemProduct(
-                  id: product.id,
-                  url: product.urlImage,
-                  name: product.name,
-                  price: product.price,
-                  stock: product.stock,
-                  description: product.description,
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateUpdateView(product: product),
+                      ),
+                    );
+                  },
+                  child: CardItemProduct(
+                    id: product.id,
+                    url: product.urlImage,
+                    name: product.name,
+                    price: product.price,
+                    stock: product.stock,
+                    description: product.description,
+                  ),
                 );
               }).toList(),
             ),

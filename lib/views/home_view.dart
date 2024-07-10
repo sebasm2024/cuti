@@ -24,9 +24,9 @@ class HomeView extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
           child: Image.network(
-            '',
+            'https://i.pinimg.com/474x/55/7f/1b/557f1bff99d119df6d6e657dc2ca0d93.jpg',
             height: 200,
-            width: 290,
+            width: 200,
             fit: BoxFit.cover,
           ),
           )

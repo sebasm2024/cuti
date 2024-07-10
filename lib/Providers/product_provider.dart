@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:myapp/types/product.dart';
@@ -20,9 +19,9 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
 
   if (response.statusCode != 200) return [];
 
-  final products = (response.data as List<dynamic>).map( (item) {
+  final products = (response.data as List<dynamic>).map((item) {
     return Product.fromJson(item);
-  } ).toList();
+  }).toList();
 
   return products;
 });
@@ -36,12 +35,14 @@ final productSelectedProvider = FutureProvider<Product>((ref) async {
 
   final response = await dio.get("https://pucei.edu.ec:9101/api/v2/products");
 
-  if (response.statusCode != 200) return Product(id: "", name: "err", price: 0, stock: 0, urlImage: "", description: "err", v: 0);
+  if (response.statusCode != 200)
+    return Product(id: "", name: "err", price: 0, stock: 0, urlImage: "", description: "err", v: 0);
 
   final product = Product.fromJson(response.data);
 
   return product;
 });
+
 final createProductProvider = Provider<Future<void> Function(Product)>((ref) {
   final dio = ref.watch(dioProvider);
   return (Product product) async {
@@ -56,6 +57,24 @@ final createProductProvider = Provider<Future<void> Function(Product)>((ref) {
       }
     } catch (e) {
       throw Exception('Failed to create product. Error: $e');
+    }
+  };
+});
+
+final updateProductProvider = Provider<Future<void> Function(Product)>((ref) {
+  final dio = ref.watch(dioProvider);
+  return (Product product) async {
+    try {
+      final response = await dio.put(
+        "https://pucei.edu.ec:9101/api/v2/products/${product.id}",
+        data: product.toJson(),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update product. Status code: ${response.statusCode}, Response: ${response.data}');
+      }
+    } catch (e) {
+      throw Exception('Failed to update product. Error: $e');
     }
   };
 });

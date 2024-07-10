@@ -19,13 +19,13 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['_id'],
-      name: json['name'],
-      price: json['price'],
-      stock: json['stock'],
-      urlImage: json['urlImage'],
-      description: json['description'],
-      v: json['__v'],
+      id: json['_id'] ?? '',
+      name: json['name'] ?? '',
+      price: (json['price'] as num).toDouble(),
+      stock: (json['stock'] as num).toInt(),
+      urlImage: json['urlImage'] ?? '',
+      description: json['description'] ?? '',
+      v: (json['__v'] as num).toInt(),
     );
   }
 

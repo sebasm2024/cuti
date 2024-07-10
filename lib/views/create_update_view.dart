@@ -5,7 +5,9 @@ import 'package:myapp/types/product.dart';
 import 'package:myapp/widgets/drawer_widget.dart';
 
 class CreateUpdateView extends ConsumerStatefulWidget {
-  const CreateUpdateView({super.key});
+  final Product? product;
+
+  const CreateUpdateView({super.key, this.product});
 
   @override
   ConsumerState<CreateUpdateView> createState() => _CreateUpdateViewState();
@@ -19,7 +21,19 @@ class _CreateUpdateViewState extends ConsumerState<CreateUpdateView> {
   final TextEditingController _urlImageController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  Future<void> _createProduct() async {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.product != null) {
+      _nameController.text = widget.product!.name;
+      _stockController.text = widget.product!.stock.toString();
+      _priceController.text = widget.product!.price.toString();
+      _urlImageController.text = widget.product!.urlImage;
+      _descriptionController.text = widget.product!.description;
+    }
+  }
+
+  Future<void> _createOrUpdateProduct() async {
     if (_formKey.currentState!.validate()) {
       try {
         final String name = _nameController.text;
@@ -29,22 +43,27 @@ class _CreateUpdateViewState extends ConsumerState<CreateUpdateView> {
         final String description = _descriptionController.text;
 
         final product = Product(
-          id: '',
+          id: widget.product?.id ?? '',
           name: name,
           stock: stock,
           price: price,
           urlImage: urlImage,
           description: description,
-          v: 0,
+          v: widget.product?.v ?? 0,
         );
 
-        final createProduct = ref.read(createProductProvider);
-        await createProduct(product);
+        if (widget.product == null) {
+          final createProduct = ref.read(createProductProvider);
+          await createProduct(product);
+        } else {
+          final updateProduct = ref.read(updateProductProvider);
+          await updateProduct(product);
+        }
 
         Navigator.of(context).pop();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to create product: $e'),
+          content: Text('Failed to ${widget.product == null ? 'create' : 'update'} product: $e'),
         ));
       }
     }
@@ -121,7 +140,7 @@ class _CreateUpdateViewState extends ConsumerState<CreateUpdateView> {
                 },
               ),
               ElevatedButton(
-                onPressed: _createProduct,
+                onPressed: _createOrUpdateProduct,
                 child: const Text('Guardar'),
               ),
             ],
