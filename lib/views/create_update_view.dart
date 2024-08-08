@@ -1,150 +1,135 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:myapp/Providers/product_provider.dart';
+import 'package:myapp/routes/app_routes.dart';
 import 'package:myapp/types/product.dart';
-import 'package:myapp/widgets/drawer_widget.dart';
 
-class CreateUpdateView extends ConsumerStatefulWidget {
-  final Product? product;
+import '../widgets/custom_input_text.dart';
+import '../widgets/drawer_widget.dart';
 
-  const CreateUpdateView({super.key, this.product});
-
-  @override
-  ConsumerState<CreateUpdateView> createState() => _CreateUpdateViewState();
-}
-
-class _CreateUpdateViewState extends ConsumerState<CreateUpdateView> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _stockController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _urlImageController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+class CreateUpdateView extends ConsumerWidget {
+  final String? productId;
+  const CreateUpdateView({super.key, this.productId});
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.product != null) {
-      _nameController.text = widget.product!.name;
-      _stockController.text = widget.product!.stock.toString();
-      _priceController.text = widget.product!.price.toString();
-      _urlImageController.text = widget.product!.urlImage;
-      _descriptionController.text = widget.product!.description;
-    }
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TextEditingController nameCtrl = TextEditingController();
+    final TextEditingController priceCtrl = TextEditingController();
+    final TextEditingController stockCtrl = TextEditingController();
+    final TextEditingController urlImageCtrl = TextEditingController();
+    final TextEditingController descriptionCtrl = TextEditingController();
 
-  Future<void> _createOrUpdateProduct() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final String name = _nameController.text;
-        final int stock = _stockController.text.isNotEmpty ? int.parse(_stockController.text) : 0;
-        final double price = double.parse(_priceController.text);
-        final String urlImage = _urlImageController.text;
-        final String description = _descriptionController.text;
+    final productIdProv = productId == null
+        ? ref.watch(productEmptyProvider)
+        : ref.watch(productByIdProvider(productId!));
 
-        final product = Product(
-          id: widget.product?.id ?? '',
-          name: name,
-          stock: stock,
-          price: price,
-          urlImage: urlImage,
-          description: description,
-          v: widget.product?.v ?? 0,
-        );
 
-        if (widget.product == null) {
-          final createProduct = ref.read(createProductProvider);
-          await createProduct(product);
-        } else {
-          final updateProduct = ref.read(updateProductProvider);
-          await updateProduct(product);
-        }
 
-        Navigator.of(context).pop();
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to ${widget.product == null ? 'create' : 'update'} product: $e'),
-        ));
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const DrawerWidget(),
       appBar: AppBar(
-        title: const Text('Create/Update'),
+        title: productId == null
+            ? const Text("Create Product")
+            : const Text("Update Product"),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
+      drawer: const DrawerWidget(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Form(
+              child: Column(
+                children: [
+                  productIdProv.when(
+                      data: (product) {
+                        if(productId != null){
+                          // Update inputs controllers
+                          nameCtrl.text = product.name;
+                          priceCtrl.text = product.price.toString();
+                          stockCtrl.text = product.stock.toString();
+                          urlImageCtrl.text = product.urlImage;
+                          descriptionCtrl.text = product.description;
+                        }
+                        return Column(
+                          children: [
+                            const Text("Name product"),
+                            CustomInputText(
+                              label: 'Name product',
+                              hintText: product.name,
+                              controller: nameCtrl,
+                            ),
+                            const Text("Price"),
+                            CustomInputText(
+                              label: 'Price',
+                              hintText: product.price.toString(),
+                              controller: priceCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                            const Text("Stock"),
+                            CustomInputText(
+                              label: 'Stock',
+                              hintText: product.stock.toString(),
+                              controller: stockCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            ),
+                            const Text("URL Image"),
+                            CustomInputText(
+                              label: 'URL Image',
+                              hintText: product.urlImage,
+                              controller: urlImageCtrl,
+                            ),
+                            const Text("Description"),
+                            CustomInputText(
+                              label: 'Description',
+                              hintText: product.description,
+                              controller: descriptionCtrl,
+                            ),
+                          ],
+                        );
+                      },
+                      error: (err, trc) {
+                        return Column(
+                          children: [Text('$err'), Text('$trc')],
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              WidgetStateProperty.all(Colors.blue)),
+                      onPressed: () async {
+                        // print();
+                        final Product productSubmit = Product(
+                            id: productId ?? '',
+                            name: nameCtrl.text,
+                            price: double.parse(priceCtrl.text),
+                            stock: double.parse(stockCtrl.text),
+                            urlImage: urlImageCtrl.text,
+                            description: descriptionCtrl.text,
+                            v: 0);
+
+                        if(productId == null){
+                          // Crear
+                          ref.read(createProductProvider(productSubmit));
+                        }else {
+                          // Actualizar
+                          ref.read(updateProductProvider(productSubmit));
+                        }
+
+                        context.push(AppRoutes.productsListView);
+                        ref.invalidate(productsProvider);
+                      },
+                      child: Text(
+                        productId == null ? 'Create' : 'Update',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              TextFormField(
-                controller: _stockController,
-                decoration: const InputDecoration(labelText: 'Stock'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a stock value';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a price';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _urlImageController,
-                decoration: const InputDecoration(labelText: 'URL Image'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a URL';
-                  }
-                  final uri = Uri.tryParse(value);
-                  if (uri == null || !uri.hasAbsolutePath) {
-                    return 'Please enter a valid URL';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-              ),
-              ElevatedButton(
-                onPressed: _createOrUpdateProduct,
-                child: const Text('Guardar'),
-              ),
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );

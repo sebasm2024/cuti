@@ -1,17 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/views/create_update_view.dart';
-import 'package:myapp/views/home_view.dart';
-import 'package:myapp/views/products_list_view.dart';
-import '../views/product_detail_view.dart';
+
+import 'package:myapp/views/index.dart';
 
 class AppRoutes {
-  static const String home = "/";
-  static const String createUpdate = "/create-update";
-  static const String productDetail = "/product-detail";
-  static const String productsList = "/products-list";
+  static String home = "/";
+  static String createUpdate = "/create-update";
+  static String productDetail = "/product-detail";
+  static String productsListView = "/product-list-view";
 }
 
-final GoRouter routesConfig = GoRouter(
+final routesConfig = GoRouter(
+  errorBuilder: (context, state) => const Center(
+    child: Text("404 not found page"),
+  ),
   routes: [
     GoRoute(
       path: AppRoutes.home,
@@ -19,18 +21,19 @@ final GoRouter routesConfig = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.createUpdate,
-      builder: (context, state) => const CreateUpdateView(),
+      builder: (context, state) => CreateUpdateView(productId: state.uri.queryParameters["productId"]),
     ),
     GoRoute(
+      path: AppRoutes.productsListView,
+      builder: (context, state) => const ProductsListView(),
+    ),
+    GoRoute(
+      // path: AppRoutes.productDetail + '/:productId',
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2237042173.
       path: '${AppRoutes.productDetail}/:productId',
-      builder: (context, state) {
-        final productId = state.pathParameters['productId']!;
-        return ProductDetail(productId: productId);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.productsList,
-      builder: (context, state) => const ProductsList(),
+      builder: (context, state) => ProductDetailView(
+        productId: state.pathParameters['productId'],
+      ),
     ),
   ],
 );
