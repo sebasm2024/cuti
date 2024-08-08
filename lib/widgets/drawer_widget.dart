@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/routes/app_routes.dart';
 import 'package:myapp/widgets/custom_title_widget.dart';
-import 'package:myapp/widgets/custom_title_widget.dart';
 
 class DrawerWidget extends StatelessWidget {
   const DrawerWidget({super.key});

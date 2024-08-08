@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:myapp/Providers/product_provider.dart';
 
 import '../providers/product_provider.dart';
 import '../widgets/drawer_widget.dart';
@@ -38,4 +37,12 @@ class ProductDetailView extends ConsumerWidget {
       ),
     );
   }
+
+  ProductDetailWidget(
+      {required String id,
+      required String url,
+      required String name,
+      required double price,
+      required double stock,
+      required String description}) {}
 }
